@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Livesphere - Advanced Live TV Platform</title>
+<!-- Include hls.js for better HLS support -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Modern CSS Reset & Base Styles */
+:root {
+  --primary-color: #4361ee;
+  --primary-dark: #3a56d4;
+  --secondary-color: #3f37c9;
+  --accent-color: #4895ef;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --gray-color: #6c757d;
+  --success-color: #4cc9f0;
+  --danger-color: #f72585;
+  --warning-color: #f8961e;
+  --info-color: #4cc9f0;
+  --border-radius: 12px;
+  --box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  --transition: all 0.3s ease;
+}
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  line-height: 1.6;
+  transition: var(--transition);
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  --light-color: #121212;
+  --dark-color: #f8f9fa;
+  --gray-color: #adb5bd;
+  background-color: var(--light-color);
+  color: var(--dark-color);
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Header styling with glass morphism effect */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(67, 97, 238, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 15px 30px;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  box-shadow: var(--box-shadow);
+  z-index: 1000;
+  transition: var(--transition);
+}
+
+header h1 {
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+nav {
+  display: flex;
+  align-items: center;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 8px 15px;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  position: relative;
+}
+
+nav a:hover {
+  background-color: rgba(255,255,255,0.15);
+}
+
+nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background-color: #fff;
+  transition: var(--transition);
+}
+
+nav a:hover::after {
+  width: 70%;
+}
+
+/* Mode toggle button */
+#mode-toggle {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  padding: 8px 15px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #fff;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#mode-toggle:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+body.dark-mode #mode-toggle {
+  background: rgba(0,0,0,0.2);
+}
+
+/* Main content container with padding for fixed header */
+.main-container {
+  max-width: 1400px;
+  margin: 90px auto 30px;
+  padding: 0 20px;
+}
+
+/* Section headings */
+.section-title {
+  text-align: center;
+  margin: 40px 0 30px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2rem;
+  color: var(--primary-color);
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  border-radius: 2px;
+}
+
+/* Channels grid with responsive design */
+.channel-grid {
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+/* Channel card with hover effects */
+.channel {
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+body.dark-mode .channel {
+  background-color: #1e1e1e;
+  border-color: rgba(255,255,255,0.05);
+}
+
+.channel:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+/* Favorite star icon */
+.fav-star {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: rgba(255,255,255,0.7);
+  z-index: 10;
+  transition: var(--transition);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.fav-star:hover {
+  color: #ffcc00;
+  transform: scale(1.2);
+}
+
+.fav-star.favorited {
+  color: #ffcc00;
+  transform: scale(1.2);
+}
+
+/* Video container with TV-like design */
+.video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #000;
+  border: 4px solid #2b2b2b;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 25px rgba(0,0,0,0.4);
+  transition: var(--transition);
+  margin-bottom: 15px;
+}
+
+.video-container:hover {
+  border-color: var(--accent-color);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 0 30px rgba(72, 149, 239, 0.5);
+}
+
+/* Video element styling */
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: #000;
+  border-radius: 4px;
+}
+
+/* Channel info */
+.channel-info {
+  width: 100%;
+  padding: 0 5px;
+}
+
+.channel-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: var(--dark-color);
+  text-align: center;
+}
+
+body.dark-mode .channel-name {
+  color: var(--dark-color);
+}
+
+/* Button styles */
+.btn {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 8px 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: var(--gray-color);
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+  background-color: #d51a6a;
+}
+
+.btn-success {
+  background-color: var(--success-color);
+}
+
+.btn-success:hover {
+  background-color: #3ab0d6;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-group .btn {
+  flex: 1;
+}
+
+/* Sidebar styles */
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 300px;
+  height: 100%;
+  background-color: #fff;
+  color: var(--dark-color);
+  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+  z-index: 9999;
+  padding: 20px;
+  transition: left 0.3s ease;
+  overflow-y: auto;
+}
+
+body.dark-mode #sidebar {
+  background-color: #1e1e1e;
+  color: var(--dark-color);
+}
+
+#sidebar.active {
+  left: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+body.dark-mode .sidebar-header {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+.sidebar-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.3rem;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.close-sidebar {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--gray-color);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.close-sidebar:hover {
+  color: var(--danger-color);
+  transform: rotate(90deg);
+}
+
+/* Favorites list */
+#favorites-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#favorites-list li {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(67, 97, 238, 0.1);
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+body.dark-mode #favorites-list li {
+  background: rgba(67, 97, 238, 0.2);
+}
+
+#favorites-list li:hover {
+  background: rgba(67, 97, 238, 0.2);
+}
+
+body.dark-mode #favorites-list li:hover {
+  background: rgba(67, 97, 238, 0.3);
+}
+
+#favorites-list li .channel-title {
+  font-weight: 500;
+  flex: 1;
+}
+
+#favorites-list li .remove-fav {
+  background: none;
+  border: none;
+  color: var(--danger-color);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 5px;
+  border-radius: 50%;
+}
+
+#favorites-list li .remove-fav:hover {
+  background: rgba(247, 37, 133, 0.1);
+  transform: scale(1.2);
+}
+
+/* People watching counter */
+.people-watching {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  background: rgba(67, 97, 238, 0.1);
+  padding: 12px 20px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.people-watching .count {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--danger-color);
+  margin-left: 8px;
+}
+
+/* Search container */
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  position: relative;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.search-input {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: 2px solid rgba(67, 97, 238, 0.3);
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  outline: none;
+  width: 100%;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+.search-button {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+  background-color: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.search-button:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Floating action buttons */
+.floating-buttons {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 1000;
+}
+
+.floating-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.floating-btn:hover {
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.floating-btn.whatsapp {
+  background-color: #25D366;
+}
+
+.floating-btn.telegram {
+  background-color: #0088cc;
+}
+
+.floating-btn.donate {
+  background-color: var(--danger-color);
+  font-size: 1.2rem;
+}
+
+.floating-btn .tooltip {
+  position: absolute;
+  right: 70px;
+  background: var(--dark-color);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.floating-btn:hover .tooltip {
+  opacity: 1;
+  right: 80px;
+}
+
+/* Country cards horizontal scroll */
+.country-scroll-wrapper {
+  display: flex;
+  overflow-x: auto;
+  padding: 15px 5px;
+  gap: 20px;
+  scroll-behavior: smooth;
+  margin-bottom: 40px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.country-scroll-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.country-scroll-wrapper::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 4px;
+}
+
+.country-scroll-wrapper::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Country card styling */
+.country-card {
+  flex: 0 0 auto;
+  width: 280px;
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  transition: var(--transition);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+body.dark-mode .country-card {
+  background-color: #1e1e1e;
+  border-color: rgba(255,255,255,0.05);
+}
+
+.country-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.country-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: rgba(67, 97, 238, 0.1);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+body.dark-mode .country-header {
+  background-color: rgba(67, 97, 238, 0.2);
+}
+
+.country-header:hover {
+  background-color: rgba(67, 97, 238, 0.2);
+}
+
+body.dark-mode .country-header:hover {
+  background-color: rgba(67, 97, 238, 0.3);
+}
+
+.country-name {
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.country-flag {
+  font-size: 1.5rem;
+}
+
+.country-icon {
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.country-header.active .country-icon {
+  transform: rotate(180deg);
+}
+
+.country-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.country-content.show {
+  max-height: 500px;
+}
+
+.category {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  align-items: center;
+  transition: var(--transition);
+}
+
+body.dark-mode .category {
+  border-bottom-color: rgba(255,255,255,0.05);
+}
+
+.category:last-child {
+  border-bottom: none;
+}
+
+.category:hover {
+  background-color: rgba(0,0,0,0.02);
+}
+
+body.dark-mode .category:hover {
+  background-color: rgba(255,255,255,0.02);
+}
+
+.category-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.redirect-icon {
+  font-size: 1.2rem;
+  color: var(--danger-color);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 5px;
+  border-radius: 50%;
+}
+
+.redirect-icon:hover {
+  background-color: rgba(247, 37, 133, 0.1);
+  transform: scale(1.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .channel-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  header {
+    padding: 12px 20px;
+    flex-wrap: wrap;
+  }
+  
+  header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  nav {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  
+  nav a {
+    margin: 0 8px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+  
+  #mode-toggle {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+  }
+  
+  .main-container {
+    margin-top: 120px;
+  }
+  
+  .section-title {
+    font-size: 1.7rem;
+  }
+  
+  .floating-buttons {
+    bottom: 20px;
+    right: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .channel-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .search-container {
+    flex-direction: column;
+  }
+  
+  .search-input {
+    border-radius: var(--border-radius);
+    margin-bottom: 10px;
+  }
+  
+  .search-button {
+    border-radius: var(--border-radius);
+  }
+  
+  .floating-buttons {
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .floating-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.3rem;
+  }
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Notification toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--dark-color);
+  color: var(--light-color);
+  padding: 12px 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  z-index: 1100;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast.success {
+  background-color: var(--success-color);
+}
+
+.toast.error {
+  background-color: var(--danger-color);
+}
+
+.toast.warning {
+  background-color: var(--warning-color);
+}
+
+/* Channel quality selector */
+.quality-selector {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(0,0,0,0.7);
+  border-radius: 4px;
+  padding: 5px;
+  display: none;
+}
+
+.quality-selector.active {
+  display: block;
+}
+
+.quality-btn {
+  background: none;
+  border: none;
+  color: white;
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 3px;
+  margin: 2px;
+}
+
+.quality-btn:hover, .quality-btn.active {
+  background: var(--primary-color);
+}
+
+/* Now playing indicator */
+.now-playing {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(247, 37, 133, 0.8);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  z-index: 10;
+  display: none;
+}
+
+.now-playing.active {
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Livesphere</h1>
+  <nav>
+    <a href="#home"><i class="fas fa-home"></i> Home</a>
+    <a href="#channels"><i class="fas fa-tv"></i> Channels</a>
+    <a href="#countries"><i class="fas fa-globe"></i> Countries</a>
+    <a href="#favorites"><i class="fas fa-star"></i> Favorites</a>
+  </nav>
+  <button id="mode-toggle"><i class="fas fa-moon"></i> Dark Mode</button>
+</header>
+
+<div class="main-container">
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="people-watching">
+      <i class="fas fa-users"></i> People Watching: <span class="count" id="watch-count">1,284</span>
+    </div>
+    
+    <div class="search-container">
+      <input type="text" class="search-input" id="search-input" placeholder="Search channels..." />
+      <button class="search-button" id="search-button"><i class="fas fa-search"></i> Search</button>
+    </div>
+    
+    <h2 class="section-title">Popular Channels</h2>
+  </section>
+
+  <!-- Country Selector -->
+  <section id="countries">
+    <h2 class="section-title">Browse by Country</h2>
+    <div class="country-scroll-wrapper" id="country-scroll-wrapper">
+      <!-- Country cards will be populated by JavaScript -->
+    </div>
+  </section>
+
+  <!-- Channels Section -->
+  <section id="channels">
+    <h2 class="section-title">Local Channels</h2>
+    <div class="channel-grid" id="channel-grid">
+      <!-- Channels will be populated by JavaScript -->
+    </div>
+    
+    <h2 class="section-title">International Channels</h2>
+    <div class="channel-grid" id="international-channels">
+      <!-- International channels will be populated by JavaScript -->
+    </div>
+  </section>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <h3 class="sidebar-title"><i class="fas fa-star"></i> Favorite Channels</h3>
+    <button class="close-sidebar" id="close-sidebar">×</button>
+  </div>
+  <ul id="favorites-list"></ul>
+</div>
+
+<!-- Floating Action Buttons -->
+<div class="floating-buttons">
+  <button class="floating-btn whatsapp" onclick="shareOnWhatsApp()">
+    <i class="fab fa-whatsapp"></i>
+    <span class="tooltip">Share on WhatsApp</span>
+  </button>
+  <button class="floating-btn telegram" onclick="shareOnTelegram()">
+    <i class="fab fa-telegram"></i>
+    <span class="tooltip">Share on Telegram</span>
+  </button>
+  <button class="floating-btn donate" id="donate-btn" title="Support us!">
+    <i class="fas fa-heart"></i>
+    <span class="tooltip">Donate</span>
+  </button>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+// Configuration
+const config = {
+  viewerUpdateInterval: 3000,
+  viewerBaseCount: 1284,
+  viewerRandomRange: 50,
+  countries: [
+    {
+      name: "Algeria",
+      flag: "🇩🇿",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Angola",
+      flag: "🇦🇴",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Argentina",
+      flag: "🇦🇷",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Australia",
+      flag: "🇦🇺",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Brazil",
+      flag: "🇧🇷",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Canada",
+      flag: "🇨🇦",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "China",
+      flag: "🇨🇳",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Egypt",
+      flag: "🇪🇬",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "France",
+      flag: "🇫🇷",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Germany",
+      flag: "🇩🇪",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "India",
+      flag: "🇮🇳",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Japan",
+      flag: "🇯🇵",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Kenya",
+      flag: "🇰🇪",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Nigeria",
+      flag: "🇳🇬",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Russia",
+      flag: "🇷🇺",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "South Africa",
+      flag: "🇿🇦",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "Uganda",
+      flag: "🇺🇬",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "United Kingdom",
+      flag: "🇬🇧",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    },
+    {
+      name: "United States",
+      flag: "🇺🇸",
+      categories: ["Sports", "Entertainment", "News", "Kids", "TV Guide"]
+    }
+  ],
+  channels: [
+    {
+      name: "BUKEDDE 1",
+      image: "http://static.startimestv.com/static/files/production/poster/2025/5/1877385.jpg?l=240",
+      streamUrl: "https://stream.hydeinnovations.com/bukedde1flussonic/index.m3u8?",
+      isLocal: true
+    },
+    {
+      name: "BUKEDDE 2",
+      image: "https://via.placeholder.com/280x180.png?text=BUKEDDE+2+Live",
+      streamUrl: "https://stream.hydeinnovations.com/bukedde2flussonic/index.m3u8?",
+      isLocal: true
+    },
+    {
+      name: "GALAXY TV",
+      image: "https://via.placeholder.com/280x180.png?text=GALAXY+TV+Live",
+      streamUrl: "https://stream-200573.castr.net/6463248048d6cd3e143655b2/live_43351ad0f3b411ed81c78fcc31887c54/tracks-v3a1/rewind-3600.ts.m3u8",
+      isLocal: true
+    },
+    {
+      name: "KBS TV",
+      image: "https://via.placeholder.com/280x180.png?text=KBS+TV+Live",
+      streamUrl: "http://45.221.8.161:9091/mediaserver/hls/mychannel.m3u8",
+      isLocal: true
+    },
+    {
+      name: "ACW TV",
+      image: "https://via.placeholder.com/280x180.png?text=ACW+TV+Live",
+      streamUrl: "https://live.acwugtv.com/hls/1/stream.m3u8",
+      isLocal: true
+    },
+    {
+      name: "DREAM TV",
+      image: "https://via.placeholder.com/280x180.png?text=DREAM+TV+Live",
+      streamUrl: "https://streamfi-dreamtv1.zettawiseroutes.com:8181/hls/stream_low.m3u8",
+      isLocal: true
+    },
+    {
+      name: "GUGUDDE TV",
+      image: "https://via.placeholder.com/280x180.png?text=GUGUDDE+TV+Live",
+      streamUrl: "https://jk3lzqq4lw79-hls-live.5centscdn.com/gugudde/c9a1fdac6e082dd89e7173244f34d7b3.sdp/chunks.m3u8",
+      isLocal: true
+    },
+    {
+      name: "FORT TV SPECIAL",
+      image: "https://via.placeholder.com/280x180.png?text=FORT+TV+SPECIAL+Live",
+      streamUrl: "https://fort.co-works.org/memfs/87017643-274a-4bc0-a786-7767a0d159c2_output_0.m3u8?session=KpyNb2TAExLsCzFCD3BGPz",
+      isLocal: true
+    },
+    {
+      name: "TV WEST",
+      image: "https://via.placeholder.com/280x180.png?text=TV+WEST+Live",
+      streamUrl: "https://stream.hydeinnovations.com/tvwest-flussonic/tracks-v3a1/mono.m3u8",
+      isLocal: true
+    },
+    {
+      name: "3ABN TV",
+      image: "https://via.placeholder.com/280x180.png?text=3ABN+TV+Live",
+      streamUrl: "https://3abn.bozztv.com/3abn/3abn_uganda_live/tracks-v2a1/mono.m3u8",
+      isLocal: true
+    },
+    {
+      name: "SPIRIT TV",
+      image: "https://via.placeholder.com/280x180.png?text=SPIRIT+TV+Live",
+      streamUrl: "https://tv.tuhlprintltd.com/hls/0/stream.m3u8",
+      isLocal: true
+    },
+    {
+      name: "FORT TV",
+      image: "https://via.placeholder.com/280x180.png?text=FORT+TV+Live",
+      streamUrl: "http://fort.co-works.org:8080/hls/live.stream.m3u8",
+      isLocal: true
+    },
+    {
+      name: "ARK TV",
+      image: "https://via.placeholder.com/280x180.png?text=ARK+TV+Live",
+      streamUrl: "https://stream.hydeinnovations.com/arktv-international/tracks-v2/index.fmp4.m3u8",
+      audioUrl: "https://stream.hydeinnovations.com/arktv-international/tracks-a1/index.fmp4.m3u8",
+      isLocal: true
+    },
+    {
+      name: "Nicktoons",
+      image: "https://via.placeholder.com/280x180.png?text=Nicktoons+Live",
+      streamUrl: "http://143.244.60.30/NICKTOONS/tracks-v1a1/mono.m3u8",
+      isLocal: false
+    },
+    {
+      name: "Dubai Sports HD",
+      image: "https://via.placeholder.com/280x180.png?text=Dubai+Sports+HD",
+      streamUrl: "https://dubaiairports.stream/stream.m3u8",
+      isLocal: false
+    }
+  ]
+};
+
+// Utility functions
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.className = 'toast show ' + type;
+  toast.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+  setTimeout(() => {
+    toast.className = 'toast';
+  }, 3000);
+}
+
+function populateChannels() {
+  const localContainer = document.getElementById('channel-grid');
+  const internationalContainer = document.getElementById('international-channels');
+  localContainer.innerHTML = '';
+  internationalContainer.innerHTML = '';
+
+  config.channels.forEach(channel => {
+    const card = createChannelCard(channel);
+    if (channel.isLocal) {
+      localContainer.appendChild(card);
+    } else {
+      internationalContainer.appendChild(card);
+    }
+  });
+}
+
+// Create channel card
+function createChannelCard(channel) {
+  const card = document.createElement('div');
+  card.className = 'channel';
+
+  // Favorite star
+  const favStar = document.createElement('i');
+  favStar.className = 'fas fa-star fav-star';
+  favStar.onclick = () => toggleFavorite(channel);
+  if (isFavorited(channel)) {
+    favStar.classList.add('favorited');
+  }
+
+  // Video container
+  const videoContainer = document.createElement('div');
+  videoContainer.className = 'video-container';
+
+  // Video element
+  const video = document.createElement('video');
+  video.setAttribute('controls', true);
+  video.setAttribute('poster', channel.image);
+  video.setAttribute('playsinline', true);
+  video.setAttribute('preload', 'metadata');
+
+  // Load stream with HLS.js if needed
+  if (Hls.isSupported() && channel.streamUrl.endsWith('.m3u8')) {
+    const hls = new Hls();
+    hls.loadSource(channel.streamUrl);
+    hls.attachMedia(video);
+  } else {
+    // Fallback for non-HLS
+    video.src = channel.streamUrl;
+  }
+
+  // Channel info
+  const channelInfo = document.createElement('div');
+  channelInfo.className = 'channel-info';
+
+  const channelName = document.createElement('div');
+  channelName.className = 'channel-name';
+  channelName.innerText = channel.name;
+
+  // Play button
+  const playBtn = document.createElement('button');
+  playBtn.className = 'btn';
+  playBtn.innerHTML = '<i class="fas fa-play"></i> Play';
+  playBtn.onclick = () => {
+    // Play stream in overlay or same container
+    if (Hls.isSupported() && channel.streamUrl.endsWith('.m3u8')) {
+      const hls = new Hls();
+      hls.loadSource(channel.streamUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play();
+      });
+    } else {
+      video.src = channel.streamUrl;
+      video.play();
+    }
+    showNowPlaying(channel.name);
+  };
+
+  // Append elements
+  channelInfo.appendChild(channelName);
+  channelInfo.appendChild(playBtn);
+  videoContainer.appendChild(video);
+  card.appendChild(favStar);
+  card.appendChild(videoContainer);
+  card.appendChild(channelInfo);
+  return card;
+}
+
+// Favorites
+const favoritesKey = 'favoriteChannels';
+
+function getFavorites() {
+  const favs = localStorage.getItem(favoritesKey);
+  return favs ? JSON.parse(favs) : [];
+}
+
+function isFavorited(channel) {
+  return getFavorites().some(fav => fav.name === channel.name);
+}
+
+function toggleFavorite(channel) {
+  let favs = getFavorites();
+  if (isFavorited(channel)) {
+    favs = favs.filter(f => f.name !== channel.name);
+    showToast(`Removed ${channel.name} from favorites`, 'warning');
+  } else {
+    favs.push({ name: channel.name, image: channel.image, streamUrl: channel.streamUrl });
+    showToast(`Added ${channel.name} to favorites`);
+  }
+  localStorage.setItem(favoritesKey, JSON.stringify(favs));
+  updateFavoritesList();
+  populateChannels();
+}
+
+function updateFavoritesList() {
+  const list = document.getElementById('favorites-list');
+  list.innerHTML = '';
+  getFavorites().forEach(fav => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="channel-title">${fav.name}</div>
+      <button class="remove-fav" onclick="removeFavorite('${fav.name}')"><i class="fas fa-times"></i></button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function removeFavorite(name) {
+  let favs = getFavorites();
+  favs = favs.filter(f => f.name !== name);
+  localStorage.setItem(favoritesKey, JSON.stringify(favs));
+  updateFavoritesList();
+  showToast(`Removed ${name} from favorites`, 'warning');
+  populateChannels();
+}
+
+// Theme toggle
+const modeToggleBtn = document.getElementById('mode-toggle');
+modeToggleBtn.onclick = () => {
+  document.body.classList.toggle('dark-mode');
+  updateModeText();
+};
+
+function updateModeText() {
+  const isDark = document.body.classList.contains('dark-mode');
+  modeToggleBtn.innerHTML = `<i class="fas fa-${isDark ? 'sun' : 'moon'}"></i> ${isDark ? 'Light Mode' : 'Dark Mode'}`;
+}
+
+// Now playing indicator
+const nowPlaying = document.createElement('div');
+nowPlaying.className = 'now-playing';
+document.body.appendChild(nowPlaying);
+
+function showNowPlaying(channelName) {
+  nowPlaying.innerText = `Now Playing: ${channelName}`;
+  nowPlaying.classList.add('active');
+  setTimeout(() => {
+    nowPlaying.classList.remove('active');
+  }, 3000);
+}
+
+// Share functions
+function shareOnWhatsApp() {
+  const url = encodeURIComponent(window.location.href);
+  const message = encodeURIComponent('Check out this awesome Live TV platform: ' + window.location.href);
+  window.open(`https://wa.me/?text=${message}`, '_blank');
+}
+
+function shareOnTelegram() {
+  const url = encodeURIComponent(window.location.href);
+  const message = encodeURIComponent('Check out this awesome Live TV platform: ' + window.location.href);
+  window.open(`https://t.me/share/url?url=${url}&text=${message}`, '_blank');
+}
+
+// Sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const closeSidebarBtn = document.getElementById('close-sidebar');
+
+document.querySelector('.fa-star').addEventListener('click', () => {
+  // Toggle sidebar
+  sidebar.classList.toggle('active');
+});
+
+document.getElementById('close-sidebar').onclick = () => {
+  sidebar.classList.remove('active');
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  populateChannels();
+  updateFavoritesList();
+  updateModeText();
+
+  // Update viewer count periodically
+  const watchCountSpan = document.getElementById('watch-count');
+  setInterval(() => {
+    const randomIncrement = Math.floor(Math.random() * config.viewerRandomRange);
+    const totalCount = config.viewerBaseCount + randomIncrement;
+    watchCountSpan.innerText = totalCount.toLocaleString();
+  }, config.viewerUpdateInterval);
+});
+</script>
+
+</body>
+</html>
